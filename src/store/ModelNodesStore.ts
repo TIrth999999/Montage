@@ -1,14 +1,22 @@
 import { makeAutoObservable } from 'mobx'
+import type { ModelNode } from '../types'
 
 export class ModelNodesStore {
-  modelNodesByCanvasModelId = new Map<string, string[]>()
+  modelNodesByCanvasModelId = new Map<string, ModelNode[]>()
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true })
   }
 
-  setModelNodes(canvasModelId: string, nodeNames: string[]) {
-    this.modelNodesByCanvasModelId.set(canvasModelId, [...nodeNames])
+  setModelNodes(canvasModelId: string, nodes: ModelNode[]) {
+    this.modelNodesByCanvasModelId.set(
+      canvasModelId,
+      nodes.map((node) => ({
+        ...node,
+        position: [...node.position],
+        direction: [...node.direction],
+      })),
+    )
   }
 
   removeModelNodes(canvasModelId: string) {

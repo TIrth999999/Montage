@@ -25,4 +25,10 @@ export class CanvasStore {
       rotation: [0, 0, 0],
     })
   }
+
+  updateModelPosition(modelId: string, position: CanvasModel['position']) {
+    const model = this.models.find((entry) => entry.id === modelId)
+    if (!model) return
+    model.position = [...position]
+  }
 }

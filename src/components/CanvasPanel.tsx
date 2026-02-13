@@ -11,6 +11,7 @@ const Scene = observer(() => {
 
   return (
     <>
+      <color attach="background" args={[uiStore.viewMode === '2D' ? '#ececec' : '#f6f7f9']} />
       <ambientLight intensity={0.9} />
       <directionalLight position={[6, 10, 6]} intensity={1.1} castShadow />
       {uiStore.viewMode === '3D' ? (
@@ -21,7 +22,7 @@ const Scene = observer(() => {
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
         <planeGeometry args={[500, 500]} />
-        <meshStandardMaterial color="#f2f4f7" />
+        <meshStandardMaterial color={uiStore.viewMode === '2D' ? '#f0f0f0' : '#f2f4f7'} />
       </mesh>
 
       <Suspense fallback={<Loader />}>
@@ -32,7 +33,6 @@ const Scene = observer(() => {
 
       <OrbitControls
         makeDefault
-        // enabled={uiStore.viewMode === '3D'}
         enableRotate={uiStore.viewMode === '3D'}
         maxPolarAngle={Math.PI / 2 - 0.05}
         minDistance={5}
