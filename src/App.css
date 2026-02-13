@@ -1,0 +1,122 @@
+:root {
+  --bg: #edf1f6;
+  --panel: #ffffff;
+  --border: #d8e0ea;
+  --text: #162132;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: Inter, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 56px 1fr;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.navbar h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+}
+
+.left-panel {
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+  padding: 12px;
+}
+
+.left-panel h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.left-list {
+  display: grid;
+  gap: 8px;
+}
+
+.item-btn {
+  border: 1px solid var(--border);
+  background: #f7f9fc;
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.canvas-panel {
+  position: relative;
+  min-height: 0;
+}
+
+.view-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.view-toggle button {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f7f9fc;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.view-toggle button.active {
+  background: #1f4fd2;
+  border-color: #1f4fd2;
+  color: white;
+}
+
+.loader-container {
+  background: rgba(22, 33, 50, 0.9);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.loader-progress-track {
+  margin-top: 8px;
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.loader-progress-fill {
+  height: 100%;
+  background: #9db7ff;
+}
