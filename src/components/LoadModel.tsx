@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { useGLTF } from '@react-three/drei'
+import { Html, useGLTF } from '@react-three/drei'
 import type { CanvasModel, ModelNode } from '../types'
-import { Euler, Mesh, Object3D, Plane, Quaternion, Raycaster, Vector2, Vector3 } from 'three'
+import { Box3, BufferGeometry, Euler, LineBasicMaterial, Mesh, Object3D, Plane, Quaternion, Raycaster, Vector2, Vector3 } from 'three'
 import { useRootStore } from '../hooks/useRootStore'
 import { observer } from 'mobx-react-lite'
 import { useThree } from '@react-three/fiber'
@@ -31,6 +31,41 @@ export const LoadModel = observer(({ model }: { model: CanvasModel }) => {
   const pointerRef = useRef(new Vector2())
   const intersectionRef = useRef(new Vector3())
   const styleCleanupRef = useRef<(() => void) | null>(null)
+  const selectionBounds = useMemo(() => {
+    clone.updateMatrixWorld(true)
+    const box = new Box3().setFromObject(clone)
+    if (box.isEmpty()) return null
+
+    const min = box.min.clone()
+    const max = box.max.clone()
+    clone.worldToLocal(min)
+    clone.worldToLocal(max)
+
+    const width = Math.max(0.01, Math.abs(max.x - min.x))
+    const depth = Math.max(0.01, Math.abs(max.z - min.z))
+    const centerX = (min.x + max.x) / 2
+    const centerZ = (min.z + max.z) / 2
+    const topY = max.y + 0.05
+
+    return { width, depth, centerX, centerZ, topY }
+  }, [clone])
+  const selectionGeometry = useMemo(() => {
+    if (!selectionBounds) return null
+    const { width, depth } = selectionBounds
+    const halfW = width / 2
+    const halfD = depth / 2
+    return new BufferGeometry().setFromPoints([
+      new Vector3(-halfW, 0, -halfD),
+      new Vector3(halfW, 0, -halfD),
+      new Vector3(halfW, 0, halfD),
+      new Vector3(-halfW, 0, halfD),
+    ])
+  }, [selectionBounds])
+  const selectionMaterial = useMemo(
+    () => new LineBasicMaterial({ color: '#e5bb2b', linewidth: 2 }),
+    [],
+  )
+  const isSelected = canvasStore.selectedModelId === model.id
 
   useEffect(() => {
     const nodeEntries: ModelNode[] = []
@@ -100,6 +135,13 @@ export const LoadModel = observer(({ model }: { model: CanvasModel }) => {
   }, [])
 
   useEffect(() => {
+    return () => {
+      selectionGeometry?.dispose()
+      selectionMaterial.dispose()
+    }
+  }, [selectionGeometry, selectionMaterial])
+
+  useEffect(() => {
     const handlePointerMove = (event: PointerEvent) => {
       if (!isDraggingRef.current) return
       const liveModel = canvasStore.models.find((entry) => entry.id === model.id)
@@ -136,9 +178,6 @@ export const LoadModel = observer(({ model }: { model: CanvasModel }) => {
       )
       if (snapResult) {
         canvasStore.updateModelPosition(model.id, snapResult.nextPosition)
-        alert(
-          `${model.name}.${snapResult.dragNodeName} snapped to ${snapResult.targetModelName}.${snapResult.targetNodeName}`,
-        )
       }
       gl.domElement.style.cursor = 'default'
     }
@@ -153,6 +192,7 @@ export const LoadModel = observer(({ model }: { model: CanvasModel }) => {
   }, [camera, canvasStore, gl.domElement, model.id, model.name, modelNodesStore.modelNodesByCanvasModelId])
 
   const onPointerDown = (event: ThreeEvent<PointerEvent>) => {
+    canvasStore.setSelectedModel(model.id)
     if (uiStore.viewMode !== '2D') return
 
     event.stopPropagation()
@@ -166,14 +206,26 @@ export const LoadModel = observer(({ model }: { model: CanvasModel }) => {
   }
 
   return (
-    <primitive
-      object={clone}
-      position={model.position}
-      rotation={model.rotation}
-      castShadow
-      receiveShadow
-      onPointerDown={onPointerDown}
-    />
+    <primitive object={clone} position={model.position} rotation={model.rotation} castShadow receiveShadow onPointerDown={onPointerDown}>
+      {uiStore.viewMode === '2D' && isSelected && selectionBounds && selectionGeometry && (
+        <>
+          <lineLoop
+            geometry={selectionGeometry}
+            material={selectionMaterial}
+            position={[selectionBounds.centerX, selectionBounds.topY, selectionBounds.centerZ]}
+          />
+          <Html position={[selectionBounds.centerX, selectionBounds.topY + 0.45, selectionBounds.centerZ]} center>
+            <div className="selected-model-toolbar">
+              <button aria-label="Move"><i className="fa-solid fa-left-right" /></button>
+              <button aria-label="Align"><i className="fa-solid fa-object-group" /></button>
+              <button aria-label="Duplicate"><i className="fa-regular fa-clone" /></button>
+              <button aria-label="Delete"><i className="fa-regular fa-trash-can" /></button>
+              <button aria-label="More"><i className="fa-solid fa-ellipsis" /></button>
+            </div>
+          </Html>
+        </>
+      )}
+    </primitive>
   )
 })
 
