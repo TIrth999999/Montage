@@ -68,6 +68,8 @@ export function findSnapPosition({
     distanceXZ: number
     offsetX: number
     offsetZ: number
+    normalX: number
+    normalZ: number
     dragNodeName: string
     targetNodeName: string
     targetModelName: string
@@ -105,6 +107,8 @@ export function findSnapPosition({
             distanceXZ,
             offsetX: dx,
             offsetZ: dz,
+            normalX: dragNormal2D.x,
+            normalZ: dragNormal2D.z,
             dragNodeName: dragNode.name,
             targetNodeName: targetNode.name,
             targetModelName: otherModel.name,
@@ -116,11 +120,15 @@ export function findSnapPosition({
 
   if (!best) return null
 
+  const isScreenVertical = Math.abs(best.normalZ) >= Math.abs(best.normalX)
+  const extraOffsetX = isScreenVertical ? 0 : 0.15
+  const extraOffsetZ = isScreenVertical ? 0.15 : 0
+
   return {
     nextPosition: [
-      draggingModelPosition[0] + best.offsetX+0.01,
+      draggingModelPosition[0] + best.offsetX + extraOffsetX,
       draggingModelPosition[1],
-      draggingModelPosition[2] + best.offsetZ+0.01,
+      draggingModelPosition[2] + best.offsetZ + extraOffsetZ,
     ],
     dragNodeName: best.dragNodeName,
     targetNodeName: best.targetNodeName,

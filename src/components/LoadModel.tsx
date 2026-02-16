@@ -9,6 +9,8 @@ import { applyPlan2DStyle } from './model2DStyle'
 import { extractModelNodes } from './modelNodes'
 import { useModelDrag } from './useModelDrag'
 
+const TOOLBAR_GAP_Z = 0.6
+
 export const LoadModel = observer(({ model }: { model: CanvasModel }) => {
   const { modelNodesStore, canvasStore, uiStore } = useRootStore()
   const { scene } = useGLTF(model.glbUrl)
@@ -30,8 +32,9 @@ export const LoadModel = observer(({ model }: { model: CanvasModel }) => {
     const centerX = (min.x + max.x) / 2
     const centerZ = (min.z + max.z) / 2
     const topY = max.y + 0.05
+    const toolbarZ = min.z - TOOLBAR_GAP_Z
 
-    return { width, depth, centerX, centerZ, topY }
+    return { width, depth, centerX, centerZ, topY, toolbarZ }
   }, [clone])
 
   const selectionGeometry = useMemo(() => {
@@ -111,7 +114,7 @@ export const LoadModel = observer(({ model }: { model: CanvasModel }) => {
             raycast={() => null}
           />
           <Html
-            position={[selectionBounds.centerX, selectionBounds.topY + 0.45, selectionBounds.centerZ]}
+            position={[selectionBounds.centerX, selectionBounds.topY + 0.45, selectionBounds.toolbarZ]}
             center
             style={{ pointerEvents: 'none' }}
           >
