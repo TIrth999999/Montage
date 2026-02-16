@@ -3,7 +3,7 @@ export type Vec3 = [number, number, number]
 export type ModelNode = {
   name: string
   position: Vec3
-  direction: Vec3
+  normal: Vec3
 }
 
 export type CanvasModel = {

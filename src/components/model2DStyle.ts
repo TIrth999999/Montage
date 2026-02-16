@@ -11,9 +11,9 @@ import {
   type BufferGeometry,
 } from 'three'
 
-const NODE_FILL = new Color('#8adbe6')
-const NODE_OUTLINE = new Color('#2bb8c7')
-const DOOR_FILL = new Color('#111111')
+const NODE_FILL = new Color('#1adef8')
+const NODE_OUTLINE = new Color('#12d8ee')
+const DOOR_FILL = new Color('#000000')
 const WALL_FILL = new Color('#ffffff')
 const WALL_OUTLINE = new Color('#111111')
 

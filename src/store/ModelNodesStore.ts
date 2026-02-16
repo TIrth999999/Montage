@@ -14,7 +14,7 @@ export class ModelNodesStore {
       nodes.map((node) => ({
         ...node,
         position: [...node.position],
-        direction: [...node.direction],
+        normal: [...node.normal],
       })),
     )
   }
