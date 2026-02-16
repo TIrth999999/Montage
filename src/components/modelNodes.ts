@@ -9,6 +9,8 @@ export function extractModelNodes(root: Object3D): ModelNode[] {
   const nodeCenterLocal = new Vector3()
   const nodeNormalWorld = new Vector3()
   const nodeNormalLocal = new Vector3()
+  const nodeSize = new Vector3()
+  const nodeAxisLocal = new Vector3()
 
   root.getWorldQuaternion(rootWorldQuaternion)
   rootWorldQuaternionInverse.copy(rootWorldQuaternion).invert()
@@ -29,8 +31,26 @@ export function extractModelNodes(root: Object3D): ModelNode[] {
     nodeCenterLocal.copy(nodeCenterWorld)
     root.worldToLocal(nodeCenterLocal)
 
-    object.getWorldDirection(nodeNormalWorld)
-    nodeNormalLocal.copy(nodeNormalWorld).applyQuaternion(rootWorldQuaternionInverse).normalize()
+    if (object.geometry?.boundingBox) {
+      object.geometry.boundingBox.getSize(nodeSize)
+      if (nodeSize.x > 0 || nodeSize.z > 0) {
+        // In plan view, use the thinner horizontal axis of the node box as face normal.
+        if (nodeSize.x <= nodeSize.z) {
+          nodeAxisLocal.set(1, 0, 0)
+        } else {
+          nodeAxisLocal.set(0, 0, 1)
+        }
+        nodeNormalWorld.copy(nodeAxisLocal).transformDirection(object.matrixWorld)
+      } else {
+        object.getWorldDirection(nodeNormalWorld)
+      }
+    } else {
+      object.getWorldDirection(nodeNormalWorld)
+    }
+    nodeNormalLocal.copy(nodeNormalWorld).applyQuaternion(rootWorldQuaternionInverse).setY(0)
+    if (nodeNormalLocal.lengthSq() > 0) {
+      nodeNormalLocal.normalize()
+    }
 
     nodeEntries.push({
       name: object.name,

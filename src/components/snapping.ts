@@ -29,6 +29,7 @@ const toWorldNode = (() => {
   const rotationQuat = new Quaternion()
   const worldPosition = new Vector3()
   const worldNormal = new Vector3()
+  const modelWorldPosition = new Vector3()
 
   return (node: ModelNode, modelPosition: [number, number, number], modelRotation: [number, number, number]): WorldNode => {
     rotationEuler.set(...modelRotation)
@@ -37,11 +38,12 @@ const toWorldNode = (() => {
     worldPosition
       .set(...node.position)
       .applyQuaternion(rotationQuat)
-      .add(new Vector3(...modelPosition))
+      .add(modelWorldPosition.set(...modelPosition))
 
     worldNormal
       .set(...node.normal)
       .applyQuaternion(rotationQuat)
+      .setY(0)
       .normalize()
 
     return {
@@ -70,6 +72,8 @@ export function findSnapPosition({
     targetNodeName: string
     targetModelName: string
   } | null = null
+  const dragNormal2D = new Vector3()
+  const targetNormal2D = new Vector3()
 
   for (const otherModel of models) {
     if (otherModel.id === draggingModelId) continue
@@ -83,7 +87,12 @@ export function findSnapPosition({
         const targetWorld = toWorldNode(targetNode, otherModel.position, otherModel.rotation)
         if (Math.abs(targetWorld.worldPosition.y - dragWorld.worldPosition.y) > Y_TOLERANCE) continue
 
-        const normalAlignment = Math.abs(dragWorld.worldNormal.dot(targetWorld.worldNormal))
+        dragNormal2D.copy(dragWorld.worldNormal).setY(0)
+        targetNormal2D.copy(targetWorld.worldNormal).setY(0)
+        if (dragNormal2D.lengthSq() === 0 || targetNormal2D.lengthSq() === 0) continue
+        dragNormal2D.normalize()
+        targetNormal2D.normalize()
+        const normalAlignment = Math.abs(dragNormal2D.dot(targetNormal2D))
         if (normalAlignment < NORMAL_DOT_THRESHOLD) continue
 
         const dx = targetWorld.worldPosition.x - dragWorld.worldPosition.x
